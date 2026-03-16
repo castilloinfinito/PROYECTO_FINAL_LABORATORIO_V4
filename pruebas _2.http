@@ -1,0 +1,188 @@
+@baseUrl = http://localhost:3000
+@token = {{login.response.body.token}}
+
+# ==========================================
+# 1. AUTENTICACIÓN (LOGIN)
+# ==========================================
+
+# @name login
+POST {{baseUrl}}/auth
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "123"
+}
+
+### M1: Crear Médico Especialista
+POST {{baseUrl}}/api/medicos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "nombre": "Dr. Stephen Strange", "especialidad": "Neurocirugía", "mpps": "99887" }
+
+### M2: Crear Médico de Guardia
+POST {{baseUrl}}/api/medicos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "nombre": "Dra. Lisa Cuddy", "especialidad": "Endocrinología", "mpps": "77665" }
+
+### M3: Listar todos los médicos (Obtener IDs)
+# @name listarMedicos
+GET {{baseUrl}}/api/medicos
+Authorization: Bearer {{token}}
+
+### M4: Actualizar especialidad de un médico
+PUT {{baseUrl}}/api/medicos/{{listarMedicos.response.body.1._id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "especialidad": "Medicina Interna Crítica" }
+
+### M5: Actualizar código MPPS por error de carga
+PUT {{baseUrl}}/api/medicos/{{listarMedicos.response.body.1._id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "mpps": "00000" }
+
+### M6: Intentar crear médico sin Token (Debe fallar 401)
+POST {{baseUrl}}/api/medicos
+Content-Type: application/json
+
+{ "nombre": "Intruso", "especialidad": "Ninguna", "mpps": "0" }
+
+### M7: Listar médicos para vista pública (Si existiera el endpoint)
+GET {{baseUrl}}/api/medicos
+Authorization: Bearer {{token}}
+
+### M8: Eliminar médico por jubilación
+DELETE {{baseUrl}}/api/medicos/{{listarMedicos.response.body.0._id}}
+Authorization: Bearer {{token}}
+
+
+### P1: Registrar nuevo paciente adulto
+POST {{baseUrl}}/api/pacientes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "nombre": "Carlos Sosa", "ci": "V-15888999", "telefono": "0412-5551122" }
+
+### P2: Registrar paciente pediátrico (vía representante)
+POST {{baseUrl}}/api/pacientes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "nombre": "Ana Calabrese", "ci": "V-32111000", "telefono": "0416-8884433" }
+
+### P3: Consultar lista de pacientes
+# @name listarPacientes
+GET {{baseUrl}}/api/pacientes
+Authorization: Bearer {{token}}
+
+### P4: Actualizar número telefónico de contacto
+PUT {{baseUrl}}/api/pacientes/{{listarPacientes.response.body.0._id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "telefono": "0212-3334455" }
+
+### P5: Corregir nombre de paciente
+PUT {{baseUrl}}/api/pacientes/{{listarPacientes.response.body.1._id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "nombre": "Ana Maria Calabrese" }
+
+### P6: Intentar eliminar paciente como "Recepcion" (Debe fallar 403)
+DELETE {{baseUrl}}/api/pacientes/{{listarPacientes.response.body.0._id}}
+Authorization: Bearer {{token}}
+
+### P7: Buscar paciente específico (GET por ID)
+GET {{baseUrl}}/api/pacientes/{{listarPacientes.response.body.0._id}}
+Authorization: Bearer {{token}}
+
+### P8: Eliminar registro duplicado (Solo Admin)
+DELETE {{baseUrl}}/api/pacientes/{{listarPacientes.response.body.0._id}}
+Authorization: Bearer {{token}}
+
+### Actualizar médico (PUT)
+@medicoId = {{listarMedicos.response.body[0]._id}}
+
+PUT http://localhost:3000/api/medicos/{{medicoId}}
+Content-Type: application/json
+
+{
+    "nombre": "Dr. Casa Actualizado"
+}
+
+
+### 0. LOGIN (EJECUTAR PRIMERO)
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+{
+  "username": "admin",
+  "password": "123"
+}
+
+### VARIABLES DE APOYO (Para no repetir código)
+@token = {{login.response.body.token}}
+
+# Supongamos que ya tienes peticiones GET con estos nombres:
+# @name listarPacientes
+# @name listarMedicos
+
+---
+
+### ENTIDAD: PACIENTES
+
+### 1. Actualizar Datos de Contacto (PUT)
+PUT http://localhost:3000/api/pacientes/{{listarPacientes.response.body.0._id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "telefono": "+584125556677",
+    "direccion": "Calle Falsa 123, Mérida",
+    "contactoEmergencia": "María Pérez"
+}
+
+### 2. Cambiar Estado del Paciente (PUT)
+PUT http://localhost:3000/api/pacientes/{{listarPacientes.response.body.1._id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "estado": "Alta Médica",
+    "observaciones": "Paciente recuperado satisfactoriamente"
+}
+
+### 3. Eliminar Historial Erróneo (DELETE)
+DELETE http://localhost:3000/api/pacientes/{{listarPacientes.response.body.2._id}}
+Authorization: Bearer {{token}}
+
+---
+
+### ENTIDAD: MEDICOS
+
+### 4. Actualizar Especialidad o Consultorio (PUT)
+PUT http://localhost:3000/api/medicos/{{listarMedicos.response.body.0._id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "especialidad": "Infectología",
+    "consultorio": "Piso 2, Consultorio 204"
+}
+
+### 5. Suspender Médico Temporalmente (DELETE - Borrado Lógico)
+# Nota: Muchas APIs usan DELETE para desactivar la cuenta sin borrar los datos físicos
+DELETE http://localhost:3000/api/medicos/{{listarMedicos.response.body.1._id}}
+Authorization: Bearer {{token}}
+
+### 6. Eliminar Registro por Error de Duplicado (DELETE)
+DELETE http://localhost:3000/api/medicos/{{listarMedicos.response.body.2._id}}
+Authorization: Bearer {{token}}
+

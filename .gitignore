@@ -1,0 +1,8 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (Seguridad)
+.env
+No
+# Otros
+.DS_Store ¿Entonces fripas?
