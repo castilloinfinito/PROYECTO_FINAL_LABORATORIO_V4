@@ -17,125 +17,60 @@ Content-Type: application/json
 
 ### Paso n2
 
-# ==========================================
-# 2. ENTIDAD: MÉDICOS
-# ==========================================
+### VARIABLES GLOBALES
+@url = http://localhost:3000
+@token = TU_TOKEN_AQUI_DESPUES_DE_LOGIN
 
-# @name crearMedico
-POST {{baseUrl}}/api/medicos
-Authorization: Bearer {{token}}
+### 1. PRUEBA DE LOGIN (FUERZA BRUTA)
+# Intenta con credenciales falsas 5 veces y observa el bloqueo en la UI
+POST {{url}}/auth
 Content-Type: application/json
 
-{ "nombre": "Dr. Gregory House", "especialidad": "Diagnóstico", "mpps": "12345" }
-
-### Paso n3
-POST {{baseUrl}}/api/medicos
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{ "nombre": "Dra. Meredith Grey", "especialidad": "Cirugía General", "mpps": "67890" }
-
-###  Pason 4 Listar Médicos (EJECUTAR ESTO PRIMERO PARA OBTENER IDs)
-# @name listarMedicos
-GET {{baseUrl}}/api/medicos
-Authorization: Bearer {{token}}
-
-### Paso n5 Actualizar Médico
-PUT {{baseUrl}}/api/medicos/{{listarMedicos.response.body.0._id}}
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{ "especialidad": "Diagnóstico Avanzado" }
-
-###  Paso n6 Eliminar Médico
-DELETE {{baseUrl}}/api/medicos/{{listarMedicos.response.body.3._id}}
-Authorization: Bearer {{token}}
-
-###
-
-# ==========================================
-# 3. Paso n 7 ENTIDAD: PACIENTES
-# ==========================================
-
-# @name crearPaciente
-POST {{baseUrl}}/api/pacientes
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{ "nombre": "Juan Pérez", "ci": "V-10222333", "telefono": "0414-1112233" }
-
-###  Paso n8
-POST {{baseUrl}}/api/pacientes
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{ "nombre": "María García", "ci": "V-20444555", "telefono": "0424-5556677" }
-
-###  Paso n 9 Listar Pacientes (EJECUTAR ESTO PARA OBTENER IDs)
-# @name listarPacientes
-GET {{baseUrl}}/api/pacientes
-Authorization: Bearer {{token}}
-
-### paso n 10 Actualizar Paciente
-PUT {{baseUrl}}/api/pacientes/{{listarPacientes.response.body.0._id}}
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{ "telefono": "0412-9990000" }
-
-###
-
-# ==========================================
-# 4.paso n 11  ENTIDAD: EXÁMENES
-# ==========================================
-
-# @name crearExamen
-POST {{baseUrl}}/api/examenes
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{ 
-    "nombre": "Perfil 20", 
-    "precio": 25.50, 
-    "numeroOrden": "EXP-001",
-    "medicoId": "{{listarMedicos.response.body.0._id}}"
+{
+    "username": "admin",
+    "password": "clave_incorrecta"
 }
 
-### paso n 12
+### 2. OBTENER PACIENTES (TODOS LOS ROLES)
+GET {{url}}/api/pacientes
+Authorization: Bearer {{token}}
 
-# ==========================================
-# 5. ENTIDAD: RESULTADOS
-# ==========================================
-
-# @name crearResultado
-POST {{baseUrl}}/api/resultados
+### 3. CREAR UN INSUMO (PROBAR ALERTA DE STOCK BAJO)
+# Crea un insumo con stock < 10 para ver la fila roja en el frontend
+POST {{url}}/api/insumos
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-    "numeroOrden": "ORD-1001",
-    "pacienteId": "{{listarPacientes.response.body.0._id}}",
-    "medicoId": "{{listarMedicos.response.body.0._id}}",
-    "valor": "Glicemia: 95 mg/dL (Normal)"
+    "nombre": "Reactivo de Prueba Crítico",
+    "stock": 5,
+    "unidad": "ML",
+    "fechaVencimiento": "2026-12-31"
 }
 
-###  paso n 13 Listar Resultados
-GET {{baseUrl}}/api/resultados
+### 4. PRUEBA DE SEGURIDAD: ACCESO A FACTURAS
+# Si el token es de un "Bioanalista", esto debe devolver 403 Forbidden
+GET {{url}}/api/facturas
 Authorization: Bearer {{token}}
 
-###
-
-# ==========================================
-# 6.  paso n 14 GESTIÓN DE USUARIOS
-# ==========================================
-
-POST {{baseUrl}}/api/usuarios
+### 5. CREAR UNA CITA (RELACIONALIDAD)
+# Sustituye el pacienteId por un ID real de tu base de datos
+POST {{url}}/api/citas
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-    "username": "bio_ana",
-    "password": "ClaveBioanalista123",
-    "rol": "Bioanalista",
-    "cargo": "Jefe de Laboratorio"
-} 
+    "pacienteId": "65f123abc456def789012345",
+    "fecha": "2026-04-15T09:00:00",
+    "motivo": "Examen de Sangre",
+    "estado": "Pendiente"
+}
+
+### 6. ACTUALIZAR EQUIPO (SOLO ADMIN)
+PUT {{url}}/api/equipos/ID_DEL_EQUIPO
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "estado": "En Reparacion"
+}

@@ -1,39 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const { PacienteCtrl, MedicoCtrl, ExamenCtrl, UsuarioCtrl, ResultadoCtrl } = require('../controllers/GeneralController');
+const C = require('../controllers/GeneralController');
 
 // Middleware de Seguridad por Roles
-const auth = (roles) => (req, res, next) => {
-    if (req.session && req.session.usuarioLogueado && roles.includes(req.session.usuarioLogueado.rol)) {
-        return next();
-    }
-    res.status(401).json({ success: false, error: "No autorizado. Inicia sesión como: " + roles.join(', ') });
+const auth = (rolesPermitidos) => (req, res, next) => {
+  if (req.user && rolesPermitidos.includes(req.user.rol)) return next();
+  res.status(403).json({ success: false, error: "No tienes permisos para esta sección." });
 };
 
-// --- RUTAS DE PACIENTES ---
-router.get('/pacientes', auth(['Admin', 'Bioanalista', 'Recepcion']), PacienteCtrl.listar);
-router.post('/pacientes', auth(['Admin', 'Recepcion']), PacienteCtrl.crear);
-router.put('/pacientes/:id', auth(['Admin', 'Recepcion']), PacienteCtrl.actualizar);
-router.delete('/pacientes/:id', auth(['Admin']), PacienteCtrl.eliminar);
+// RUTAS AUTOMATIZADAS POR ENTIDAD
+const configurarRutas = (path, ctrl, rolesLectura, rolesEscritura) => {
+  router.get(`/${path}`, auth(rolesLectura), ctrl.listar);
+  router.post(`/${path}`, auth(rolesEscritura), ctrl.crear);
+  router.put(`/${path}/:id`, auth(['Admin']), ctrl.actualizar); // Solo admin edita/borra por defecto
+  router.delete(`/${path}/:id`, auth(['Admin']), ctrl.eliminar);
+};
 
-// --- RUTAS DE MÉDICOS ---
-router.get('/medicos', auth(['Admin', 'Bioanalista', 'Recepcion']), MedicoCtrl.listar);
-router.post('/medicos', auth(['Admin']), MedicoCtrl.crear);
-router.put('/medicos/:id', auth(['Admin']), MedicoCtrl.actualizar);
-router.delete('/medicos/:id', auth(['Admin']), MedicoCtrl.eliminar);
-
-// --- RUTAS DE EXÁMENES ---
-router.get('/examenes', auth(['Admin', 'Bioanalista', 'Recepcion']), ExamenCtrl.listar);
-router.get('/examenes/public', ExamenCtrl.listar); 
-router.post('/examenes', auth(['Admin']), ExamenCtrl.crear);
-
-// --- RUTAS DE RESULTADOS ---
-router.get('/resultados', auth(['Admin', 'Bioanalista', 'Recepcion']), ResultadoCtrl.listar);
-router.post('/resultados', auth(['Admin', 'Bioanalista']), ResultadoCtrl.crear);
-router.put('/resultados/:id', auth(['Admin', 'Bioanalista']), ResultadoCtrl.actualizar);
-
-// --- RUTAS DE USUARIOS ---
-router.get('/usuarios', auth(['Admin']), UsuarioCtrl.listar);
-router.post('/usuarios', auth(['Admin']), UsuarioCtrl.crear);
+// Configuración de permisos
+configurarRutas('pacientes', C.PacienteCtrl, ['Admin', 'Recepcion', 'Bioanalista', 'Contador'], ['Admin', 'Recepcion']);
+configurarRutas('medicos', C.MedicoCtrl, ['Admin', 'Recepcion'], ['Admin']);
+configurarRutas('examenes', C.ExamenCtrl, ['Admin', 'Bioanalista', 'Recepcion'], ['Admin']);
+configurarRutas('resultados', C.ResultadoCtrl, ['Admin', 'Bioanalista'], ['Admin', 'Bioanalista']);
+configurarRutas('insumos', C.InsumoCtrl, ['Admin', 'Bioanalista'], ['Admin', 'Bioanalista']);
+configurarRutas('citas', C.CitaCtrl, ['Admin', 'Recepcion'], ['Admin', 'Recepcion']);
+configurarRutas('facturas', C.FacturaCtrl, ['Admin', 'Contador'], ['Admin', 'Contador']);
+configurarRutas('equipos', C.EquipoCtrl, ['Admin', 'Bioanalista'], ['Admin']);
+configurarRutas('usuarios', C.UsuarioCtrl, ['Admin'], ['Admin']);
 
 module.exports = router;
