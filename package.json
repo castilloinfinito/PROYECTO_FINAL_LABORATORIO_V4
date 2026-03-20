@@ -9,7 +9,6 @@
     "async": "^3.2.6",
     "balanced-match": "^1.0.2",
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.3",
     "binary-extensions": "^2.3.0",
     "body-parser": "^2.2.2",
     "brace-expansion": "^2.0.2",
@@ -91,7 +90,6 @@
     "negotiator": "^1.0.0",
     "node-addon-api": "^8.6.0",
     "node-gyp-build": "^4.8.4",
-    "nodemon": "^3.1.14",
     "normalize-path": "^3.0.0",
     "object-assign": "^4.1.1",
     "object-inspect": "^1.13.4",
@@ -140,8 +138,9 @@
     "wrappy": "^1.0.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "start": "node app.js",
+  "migrate": "node migrate.js"
+}
   "repository": {
     "type": "git",
     "url": "git+https://github.com/castilloinfinito/PROYECTO_FINAL_LABORATORIO_V4.git"
@@ -153,5 +152,8 @@
   "bugs": {
     "url": "https://github.com/castilloinfinito/PROYECTO_FINAL_LABORATORIO_V4/issues"
   },
-  "homepage": "https://github.com/castilloinfinito/PROYECTO_FINAL_LABORATORIO_V4#readme"
+  "homepage": "https://github.com/castilloinfinito/PROYECTO_FINAL_LABORATORIO_V4#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }
