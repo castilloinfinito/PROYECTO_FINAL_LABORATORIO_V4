@@ -1,3 +1,4 @@
+// importacion de modulos de express
 const mongoose = require('mongoose');
 
 const conectarDB = async () => {
@@ -8,12 +9,12 @@ const conectarDB = async () => {
     console.log(`🚀 MongoDB Conectado: ${conn.connection.host}`);
   } catch (error) {
     console.error(`❌ Error de conexión: ${error.message}`);
-    // Si la base de datos falla, la API no debe arrancar
+    // Si la base de datos falla, la API no debe arrancar, sincronizacion de respuestaas
     process.exit(1);
   }
 };
 
-// Monitoreo de desconexiones accidentales
+// Monitoreo de desconexiones accidentales, seguridad
 mongoose.connection.on('disconnected', () => {
   console.log('⚠️ MongoDB se ha desconectado.');
 });

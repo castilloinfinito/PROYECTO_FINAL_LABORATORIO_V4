@@ -1,16 +1,17 @@
+// importacion de modulos de express
 const models = require('../models/LaboratorioModels');
-
+// uso de class como plantilla, para unificar metodos y simplificar codigo
 class GenericController {
   constructor(model) {
     this.model = model;
   }
 
-  // Listar con Auto-Populate dinámico
+  // Listar con Auto-Populate dinámico, mejora el flujoi de datos, metodos CRUD
   listar = async (req, res) => {
     try {
       let query = this.model.find();
       
-      // Seguridad: Si es el modelo de Usuario, nunca enviar el password
+      // Seguridad: Si es el modelo de Usuario, nunca enviar el password, mejorando seguridad
       if (this.model.modelName === 'Usuario') {
         query = query.select('-password');
       }
@@ -64,7 +65,7 @@ class GenericController {
   }
 }
 
-// Exportamos las instancias para cada modelo
+// Exportamos las instancias para cada modelo, formato unificado.
 module.exports = {
   PacienteCtrl: new GenericController(models.Paciente),
   MedicoCtrl: new GenericController(models.Medico),

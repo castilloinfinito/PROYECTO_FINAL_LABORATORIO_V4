@@ -3,117 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LabSystem Pro | Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>LabSystem Pro - Panel de Gestión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@180°C5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        :root { --main: #1e293b; --accent: #2563eb; --bg: #f1f5f9; --sidebar-width: 260px; }
-        body { display: flex; font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); }
-        
-        /* Estilos de la interfaz */
-        nav { width: var(--sidebar-width); background: var(--main); color: white; height: 100vh; position: fixed; padding: 20px; box-sizing: border-box; }
-        main { margin-left: var(--sidebar-width); flex-grow: 1; padding: 30px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 12px; border-bottom: 2px solid #e2e8f0; color: #64748b; }
-        td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        
-        .btn-logout { margin-top: auto; cursor: pointer; color: #fb7185; font-weight: bold; }
-        .error-msg { color: #dc2626; text-align: center; padding: 20px; display: none; }
+        :root { --primary-color: #2c3e50; --secondary-color: #18bc9c; }
+        body { background-color: #f4f7f6; }
+        .sidebar { min-height: 100vh; background: var(--primary-color); color: white; }
+        .nav-link { color: rgba(255,255,255,0.7); cursor: pointer; }
+        .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); }
+        .card { border: none; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1); }
+        .btn-primary { background-color: var(--secondary-color); border: none; }
     </style>
 </head>
 <body>
 
-<nav>
-    <h2>LabSystem</h2>
-    <hr>
-    <ul style="list-style: none; padding: 0;">
-        <li onclick="switchModulo('pacientes')" style="cursor:pointer; padding:10px 0;"> <i class="fas fa-user-injured"></i> Pacientes</li>
-        <li onclick="switchModulo('examenes')" style="cursor:pointer; padding:10px 0;"> <i class="fas fa-vials"></i> Exámenes</li>
-        <li onclick="switchModulo('resultados')" style="cursor:pointer; padding:10px 0;"> <i class="fas fa-file-medical"></i> Resultados</li>
-    </ul>
-    <div class="btn-logout" onclick="logout()"> <i class="fas fa-sign-out-alt"></i> Cerrar Sesión</div>
-</nav>
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block sidebar p-3">
+            <h4 class="text-center mb-4"><i class="bi bi-virus"></i> LabSystem</h4>
+            <ul class="nav flex-column" id="menuEntities">
+                <li class="nav-item"><a class="nav-link active" onclick="loadEntity('pacientes')"><i class="bi bi-people me-2"></i> Pacientes</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="loadEntity('medicos')"><i class="bi bi-person-badge me-2"></i> Médicos</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="loadEntity('citas')"><i class="bi bi-calendar-event me-2"></i> Citas</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="loadEntity('examenes')"><i class="bi bi-file-earmark-medical me-2"></i> Exámenes</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="loadEntity('resultados')"><i class="bi bi-clipboard-check me-2"></i> Resultados</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="loadEntity('facturas')"><i class="bi bi-cash-stack me-2"></i> Facturación</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="loadEntity('insumos')"><i class="bi bi-box-seam me-2"></i> Inventario</a></li>
+                <hr>
+                <li class="nav-item"><a class="nav-link text-danger" onclick="logout()"><i class="bi bi-box-arrow-left me-2"></i> Salir</a></li>
+            </ul>
+        </nav>
 
-<main>
-    <header style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 id="page-title">Panel de Control</h1>
-        <div id="user-info" style="font-weight: bold; color: var(--accent);"></div>
-    </header>
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2" id="entityTitle">Gestión de Pacientes</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="openModal('create')">
+                        <i class="bi bi-plus-lg"></i> Nuevo Registro
+                    </button>
+                </div>
+            </div>
 
-    <div class="card">
-        <div id="error-container" class="error-msg"></div>
-        <table id="data-table">
-            <thead id="thead"></thead>
-            <tbody id="tbody"></tbody>
-        </table>
+            <div class="card p-3">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light" id="tableHeader">
+                            </thead>
+                        <tbody id="tableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
-</main>
+</div>
 
+<div class="modal fade" id="entityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Registro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="entityForm">
+                    <input type="hidden" id="entityId">
+                    <div class="row g-3" id="formFields">
+                        </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="entityForm" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    let modActual = 'pacientes';
+    let currentEntity = 'pacientes';
     const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
+    const modal = new bootstrap.Modal(document.getElementById('entityModal'));
 
-    // Redirigir si no hay token al cargar
+    // Redirección si no hay token
     if (!token) window.location.href = '/login';
 
-    document.getElementById('user-info').innerText = `${user?.username} (${user?.rol})`;
+    const config = {
+        pacientes: { title: "Pacientes", fields: ['nombre', 'cedula', 'email', 'telefono'] },
+        medicos: { title: "Médicos", fields: ['nombre', 'especialidad', 'telefono'] },
+        insumos: { title: "Insumos", fields: ['nombre', 'cantidad', 'unidadMedida'] }
+        // Agregar las demás entidades aquí siguiendo el mismo patrón
+    };
 
-    async function cargarDatos() {
-        const errorDiv = document.getElementById('error-container');
-        errorDiv.style.display = 'none';
-        
+    async function loadEntity(entity) {
+        currentEntity = entity;
+        document.getElementById('entityTitle').innerText = `Gestión de ${config[entity]?.title || entity}`;
+        renderHeader(entity);
+        fetchData();
+    }
+
+    function renderHeader(entity) {
+        const fields = config[entity]?.fields || ['nombre'];
+        let html = '<tr>';
+        fields.forEach(f => html += `<th class="text-capitalize">${f}</th>`);
+        html += '<th class="text-end">Acciones</th></tr>';
+        document.getElementById('tableHeader').innerHTML = html;
+    }
+
+    async function fetchData() {
         try {
-            const res = await fetch(`/api/${modActual}`, {
+            const response = await fetch(`/api/${currentEntity}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            const data = await response.json();
+            renderTable(data);
+        } catch (error) { console.error("Error al cargar datos", error); }
+    }
 
-            // MANEJO DE ERRORES DE AUTENTICACIÓN
-            if (res.status === 401) {
-                alert("Sesión expirada. Por favor inicie sesión nuevamente.");
-                logout();
-                return;
-            }
+    function renderTable(data) {
+        const fields = config[currentEntity]?.fields || ['nombre'];
+        let html = '';
+        data.forEach(item => {
+            html += '<tr>';
+            fields.forEach(f => html += `<td>${item[f] || 'N/A'}</td>`);
+            html += `<td class="text-end">
+                <button class="btn btn-sm btn-outline-info me-1" onclick="openModal('edit', '${item._id}')"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteItem('${item._id}')"><i class="bi bi-trash"></i></button>
+            </td></tr>`;
+        });
+        document.getElementById('tableBody').innerHTML = html;
+    }
 
-            if (res.status === 403) {
-                errorDiv.innerText = "⚠️ No tienes permisos para ver este módulo.";
-                errorDiv.style.display = 'block';
-                document.getElementById('tbody').innerHTML = '';
-                return;
-            }
+    async function openModal(mode, id = null) {
+        const formFields = document.getElementById('formFields');
+        formFields.innerHTML = '';
+        document.getElementById('entityId').value = id || '';
+        document.getElementById('modalTitle').innerText = mode === 'create' ? 'Nuevo Registro' : 'Editar Registro';
 
-            const data = await res.json();
-            renderizar(data);
-        } catch (err) {
-            console.error("Error de red:", err);
+        // Generar inputs dinámicos basados en la config
+        config[currentEntity].fields.forEach(field => {
+            formFields.innerHTML += `
+                <div class="col-md-6">
+                    <label class="form-label text-capitalize">${field}</label>
+                    <input type="text" class="form-control" name="${field}" id="f_${field}" required>
+                </div>`;
+        });
+
+        if (mode === 'edit') {
+            const res = await fetch(`/api/${currentEntity}/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const item = await res.json();
+            config[currentEntity].fields.forEach(field => {
+                document.getElementById(`f_${field}`).value = item[field] || '';
+            });
+        }
+        modal.show();
+    }
+
+    document.getElementById('entityForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('entityId').value;
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/${currentEntity}/${id}` : `/api/${currentEntity}`;
+
+        await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(data)
+        });
+
+        modal.hide();
+        fetchData();
+    };
+
+    async function deleteItem(id) {
+        if (confirm('¿Está seguro de eliminar este registro?')) {
+            await fetch(`/api/${currentEntity}/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            fetchData();
         }
     }
 
-    function renderizar(data) {
-        const tbody = document.getElementById('tbody');
-        tbody.innerHTML = data.map(item => `
-            <tr>
-                <td>${item.nombre || item.numeroOrden || item._id}</td>
-                <td>${item.pacienteId?.nombre || item.especialidad || 'N/A'}</td>
-                <td><button onclick="alert('ID: ${item._id}')">Detalles</button></td>
-            </tr>
-        `).join('');
-    }
-
-    function switchModulo(m) {
-        modActual = m;
-        document.getElementById('page-title').innerText = m.toUpperCase();
-        cargarDatos();
-    }
-
     function logout() {
-        localStorage.clear();
+        localStorage.removeItem('token');
         window.location.href = '/login';
     }
 
     // Carga inicial
-    cargarDatos();
+    window.onload = () => loadEntity('pacientes');
 </script>
 </body>
 </html>

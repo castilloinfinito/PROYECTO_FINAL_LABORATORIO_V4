@@ -1,3 +1,4 @@
+// importacion de modulos de express
 const express = require('express');
 const router = express.Router();
 const C = require('../controllers/GeneralController');
@@ -17,7 +18,7 @@ const configurarRutas = (path, ctrl, rolesLectura, rolesEscritura) => {
   // POST: Crear
   router.post(`/${path}`, verificarAcceso(rolesEscritura), ctrl.crear);
   
-  // PUT/DELETE: Solo Admin (Blindaje de seguridad por defecto)
+  // PUT/DELETE: Solo Admin ( seguridad por defecto)
   router.put(`/${path}/:id`, verificarAcceso(['Admin']), ctrl.actualizar);
   router.delete(`/${path}/:id`, verificarAcceso(['Admin']), ctrl.eliminar);
 };

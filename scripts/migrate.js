@@ -8,7 +8,7 @@ async function executeMigration() {
     console.log("🚀 Iniciando proceso de migración unificado...");
     await mongoose.connect(process.env.MONGO_URI);
     
-    // TAREA 1: Limpieza de seguridad (Lo que hacía fix.js)
+    // TAREA 1: Limpieza de seguridad 
     // Útil en desarrollo para evitar duplicados de índices antiguos
     console.log("🧹 Limpiando índices de usuario...");
     await Usuario.collection.dropIndexes().catch(() => {}); 
@@ -30,7 +30,7 @@ async function executeMigration() {
     const cuentaPacientes = await Paciente.countDocuments();
     if (cuentaPacientes === 0) {
       console.log("📦 Poblando datos iniciales de prueba...");
-      // Aquí pegas una muestra representativa de tus seeds
+      
       await Paciente.create({ nombre: "Juan Perez", ci: "V-123456", telefono: "0414-111" });
       await Insumo.create({ nombre: "Reactivo AB", stock: 5, unidad: "ML" });
       console.log("✅ Datos de prueba insertados.");

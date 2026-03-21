@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 /**
  * Middleware unificado para proteger rutas.
- * 1. Verifica la validez del Token JWT.
+ * 1. Verifica la validez del Token JWT.para garantizar seguridad del sistema
  * 2. (Opcional) Verifica si el rol del usuario está permitido.
  */
 const verificarAcceso = (rolesPermitidos = []) => {
@@ -33,7 +33,7 @@ const verificarAcceso = (rolesPermitidos = []) => {
                 });
             }
 
-            next(); // Todo bien, adelante.
+            next(); 
         } catch (error) {
             return res.status(401).json({ 
                 success: false, 

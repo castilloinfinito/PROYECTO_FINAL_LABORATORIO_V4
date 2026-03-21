@@ -1,7 +1,8 @@
+// importacion de modelos de express
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-// ESQUEMA DE USUARIO
+// ESQUEMA DE USUARIO(seguridad de login)
 const UsuarioSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
   password: { type: String, required: true },
@@ -25,7 +26,7 @@ const MedicoSchema = new mongoose.Schema({ nombre: String, especialidad: String,
 const ExamenSchema = new mongoose.Schema({ nombre: String, precio: Number, numeroOrden: String, medicoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Medico' } }, { timestamps: true });
 const ResultadoSchema = new mongoose.Schema({ numeroOrden: String, pacienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Paciente' }, medicoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Medico' }, valor: String, fecha: { type: Date, default: Date.now } }, { timestamps: true });
 
-// 4 NUEVAS ENTIDADES ADICIONALES
+// 4 NUEVAS ENTIDADES ADICIONALES, complementos agministrativos del laboratorio.
 const InsumoSchema = new mongoose.Schema({ nombre: String, stock: Number, unidad: { type: String, enum: ['Unidades', 'ML', 'Cajas'] }, fechaVencimiento: Date }, { timestamps: true });
 const CitaSchema = new mongoose.Schema({ pacienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Paciente' }, fecha: Date, motivo: String, estado: { type: String, enum: ['Pendiente', 'Completada', 'Cancelada'], default: 'Pendiente' } }, { timestamps: true });
 const FacturaSchema = new mongoose.Schema({ pacienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Paciente' }, montoTotal: Number, metodoPago: { type: String, enum: ['Efectivo', 'Transferencia', 'Zelle'] }, pagado: { type: Boolean, default: false } }, { timestamps: true });
