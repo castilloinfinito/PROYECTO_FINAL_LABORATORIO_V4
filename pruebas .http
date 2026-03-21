@@ -15,59 +15,133 @@ Content-Type: application/json
   "password": "123"
 }
 
-### Paso n2
-
-### VARIABLES GLOBALES
-@url = http://localhost:3000
+### ============================================================
+### CONFIGURACIÓN INICIAL
+### ============================================================
+@url = http://localhost:3000/api
 @token = TU_TOKEN_AQUI_DESPUES_DE_LOGIN
 
-### 1. PRUEBA DE LOGIN (FUERZA BRUTA)
-# Intenta con credenciales falsas 5 veces y observa el bloqueo en la UI
-POST {{url}}/auth
+### 1. LOGIN (Obtener el token para las demás pruebas)
+POST http://localhost:3000/auth
 Content-Type: application/json
 
 {
     "username": "admin",
-    "password": "clave_incorrecta"
+    "password": "123"
 }
 
-### 2. OBTENER PACIENTES (TODOS LOS ROLES)
-GET {{url}}/api/pacientes
+### ============================================================
+### ENTIDAD: INSUMOS (Inventario)
+### ============================================================
+
+### A. Listar Insumos (GET)
+GET {{url}}/insumos
 Authorization: Bearer {{token}}
 
-### 3. CREAR UN INSUMO (PROBAR ALERTA DE STOCK BAJO)
-# Crea un insumo con stock < 10 para ver la fila roja en el frontend
-POST {{url}}/api/insumos
+### B. Crear nuevo Reactivo (POST)
+POST {{url}}/insumos
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-    "nombre": "Reactivo de Prueba Crítico",
-    "stock": 5,
+    "nombre": "Reactivo de Glucosa Enzymática",
+    "stock": 15,
     "unidad": "ML",
     "fechaVencimiento": "2026-12-31"
 }
 
-### 4. PRUEBA DE SEGURIDAD: ACCESO A FACTURAS
-# Si el token es de un "Bioanalista", esto debe devolver 403 Forbidden
-GET {{url}}/api/facturas
-Authorization: Bearer {{token}}
-
-### 5. CREAR UNA CITA (RELACIONALIDAD)
-# Sustituye el pacienteId por un ID real de tu base de datos
-POST {{url}}/api/citas
+### C. Actualizar Stock - Alerta de Bajo Inventario (PUT)
+### Cambia el ID por uno obtenido en el GET
+PUT {{url}}/insumos/ID_DEL_INSUMO
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-    "pacienteId": "65f123abc456def789012345",
-    "fecha": "2026-04-15T09:00:00",
-    "motivo": "Examen de Sangre",
+    "stock": 4
+}
+
+### ============================================================
+### ENTIDAD: CITAS (Agenda)
+### ============================================================
+
+### A. Listar Citas con Auto-Populate (GET)
+GET {{url}}/citas
+Authorization: Bearer {{token}}
+
+### B. Agendar Cita (POST)
+### El pacienteId debe ser un ID real de tu colección de Pacientes
+POST {{url}}/citas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "pacienteId": "ID_DE_UN_PACIENTE_REAL",
+    "fecha": "2026-05-20T09:00:00Z",
+    "motivo": "Perfil 20 y Orina",
     "estado": "Pendiente"
 }
 
-### 6. ACTUALIZAR EQUIPO (SOLO ADMIN)
-PUT {{url}}/api/equipos/ID_DEL_EQUIPO
+### C. Cambiar Estado de Cita (PUT)
+PUT {{url}}/citas/ID_DE_LA_CITA
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "estado": "Completada"
+}
+
+### ============================================================
+### ENTIDAD: FACTURAS (Contabilidad)
+### ============================================================
+
+### A. Ver historial de Facturación (GET)
+GET {{url}}/facturas
+Authorization: Bearer {{token}}
+
+### B. Generar Factura (POST)
+POST {{url}}/facturas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "pacienteId": "ID_DE_UN_PACIENTE_REAL",
+    "montoTotal": 45.50,
+    "metodoPago": "Zelle",
+    "pagado": true
+}
+
+### C. Modificar Monto o Pago (PUT)
+PUT {{url}}/facturas/ID_DE_LA_FACTURA
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "pagado": true,
+    "metodoPago": "Efectivo"
+}
+
+### ============================================================
+### ENTIDAD: EQUIPOS (Mantenimiento)
+### ============================================================
+
+### A. Listar Estado de Equipos (GET)
+GET {{url}}/equipos
+Authorization: Bearer {{token}}
+
+### B. Registrar nuevo Equipo (POST)
+POST {{url}}/equipos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nombre": "Centrífuga Digital Mod-X",
+    "marca": "Eppendorf",
+    "estado": "Operativo",
+    "ultimoMantenimiento": "2026-01-15"
+}
+
+### C. Reportar Equipo en Reparación (PUT)
+PUT {{url}}/equipos/ID_DEL_EQUIPO
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
