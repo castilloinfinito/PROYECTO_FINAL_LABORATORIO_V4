@@ -1,0 +1,212 @@
+###############################################################################
+# CONFIGURACIÓN INICIAL Y AUTENTICACIÓN
+###############################################################################
+@url = http://localhost:3000
+@contentType = application/json
+
+### 0. LOGIN (Ejecutar primero para obtener el token)
+# @name login
+POST {{url}}/auth
+Content-Type: {{contentType}}
+
+{
+    "username": "admin",
+    "password": "123"
+}
+
+### VARIABLE GLOBAL DE TOKEN (Extraída de la respuesta del login)
+@token = {{login.response.body.token}}
+
+###############################################################################
+# 1. ENTIDAD: USUARIOS (Solo Admin)
+###############################################################################
+
+### Listar Usuarios
+GET {{url}}/api/usuarios
+Authorization: Bearer {{token}}
+
+### Crear Usuario
+POST {{url}}/api/usuarios
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "username": "nuevo_usuario",
+    "password": "456",
+    "rol": "Recepcion",
+    "cargo": "Asistente de Turno"
+}
+
+### Eliminar Usuario (Reemplazar ID)
+DELETE {{url}}/api/usuarios/ID_AQUÍ
+Authorization: Bearer {{token}}
+
+###############################################################################
+# 2. ENTIDAD: PACIENTES (Admin, Recepción, Bioanalista)
+###############################################################################
+
+### Listar Pacientes
+GET {{url}}/api/pacientes
+Authorization: Bearer {{token}}
+
+### Crear Paciente
+# @name nuevoPaciente
+POST {{url}}/api/pacientes
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "nombre": "Carlos Mendoza",
+    "ci": "V-25888999",
+    "telefono": "0424-7778899"
+}
+
+### Actualizar Paciente
+PUT {{url}}/api/pacientes/{{nuevoPaciente.response.body.data._id}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "telefono": "0271-2223344"
+}
+
+###############################################################################
+# 3. ENTIDAD: MÉDICOS (Admin, Recepción)
+###############################################################################
+
+### Listar Médicos
+GET {{url}}/api/medicos
+Authorization: Bearer {{token}}
+
+### Crear Médico
+# @name nuevoMedico
+POST {{url}}/api/medicos
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "nombre": "Dra. Ana Rivas",
+    "especialidad": "Hematología",
+    "mpps": "MPPS-887766"
+}
+
+###############################################################################
+# 4. ENTIDAD: EXÁMENES (Admin, Bioanalista)
+###############################################################################
+
+### Listar Exámenes (Verifica Populate del Médico)
+GET {{url}}/api/examenes
+Authorization: Bearer {{token}}
+
+### Crear Examen
+POST {{url}}/api/examenes
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "nombre": "Perfil Lipídico",
+    "precio": 25.50,
+    "numeroOrden": "ORD-101",
+    "medicoId": "{{nuevoMedico.response.body.data._id}}"
+}
+
+###############################################################################
+# 5. ENTIDAD: RESULTADOS (Admin, Bioanalista)
+###############################################################################
+
+### Listar Resultados
+GET {{url}}/api/resultados
+Authorization: Bearer {{token}}
+
+### Crear Resultado
+POST {{url}}/api/resultados
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "numeroOrden": "ORD-101",
+    "pacienteId": "{{nuevoPaciente.response.body.data._id}}",
+    "medicoId": "{{nuevoMedico.response.body.data._id}}",
+    "valor": "Colesterol: 180mg/dL - Normal",
+    "fecha": "2026-03-22"
+}
+
+###############################################################################
+# 6. ENTIDAD: INSUMOS / INVENTARIO (Admin, Bioanalista, Contador)
+###############################################################################
+
+### Listar Insumos (Probar Alerta Roja si stock < 10)
+GET {{url}}/api/insumos
+Authorization: Bearer {{token}}
+
+### Crear Insumo con Stock Crítico
+POST {{url}}/api/insumos
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "nombre": "Tiras Reactivas Glucosa",
+    "stock": 5,
+    "unidad": "Cajas",
+    "fechaVencimiento": "2027-12-31"
+}
+
+###############################################################################
+# 7. ENTIDAD: CITAS (Admin, Recepción)
+###############################################################################
+
+### Listar Citas
+GET {{url}}/api/citas
+Authorization: Bearer {{token}}
+
+### Crear Cita
+POST {{url}}/api/citas
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "pacienteId": "{{nuevoPaciente.response.body.data._id}}",
+    "fecha": "2026-04-10T08:30:00.000Z",
+    "motivo": "Control Mensual",
+    "estado": "Pendiente"
+}
+
+###############################################################################
+# 8. ENTIDAD: FACTURAS (Admin, Contador)
+###############################################################################
+
+### Listar Facturas
+GET {{url}}/api/facturas
+Authorization: Bearer {{token}}
+
+### Crear Factura
+POST {{url}}/api/facturas
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "pacienteId": "{{nuevoPaciente.response.body.data._id}}",
+    "montoTotal": 45.00,
+    "metodoPago": "Efectivo",
+    "pagado": true
+}
+
+###############################################################################
+# 9. ENTIDAD: EQUIPOS (Admin, Bioanalista)
+###############################################################################
+
+### Listar Equipos
+GET {{url}}/api/equipos
+Authorization: Bearer {{token}}
+
+### Crear Equipo
+POST {{url}}/api/equipos
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+    "nombre": "Analizador Químico V4",
+    "marca": "Roche",
+    "estado": "Operativo",
+    "ultimoMantenimiento": "2026-01-15"
+}

@@ -1,4 +1,3 @@
-// importacion de los modulos de expreess
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -9,58 +8,80 @@ const apiRoutes = require('./routes/apiRoutes');
 
 const app = express();
 
-// 1. Conectar a la Base de Datos
+// 1. CONEXIÓN A BASE DE DATOS
 conectarDB();
 
-// 2. Configuraciones de Express
+// 2. CONFIGURACIÓN DE MOTOR DE VISTAS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// 3. MIDDLEWARES DE PROCESAMIENTO
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. Ruta de Autenticación (Login)
-app.post('/auth', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    
-    // Buscar usuario y ejecutar el método de comparación de password (definido en el modelo)
-    const user = await Usuario.findOne({ username });
-    if (!user || !(await user.compararPassword(password))) {
-      return res.status(401).json({ success: false, error: "Usuario o contraseña incorrectos" });
+// 4. MIDDLEWARE GLOBAL DE JWT (La base de tu seguridad)
+// Extrae el usuario del token en cada petición para que los controladores lo usen
+app.use((req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = decoded; // Inyecta {id, rol, username} en el request
+        } catch (error) {
+            console.error("JWT Error: Token expirado o inválido");
+        }
     }
-
-    // Generar Token JWT con la clave del .env
-    const token = jwt.sign(
-      { id: user._id, rol: user.rol, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
-
-    res.json({ 
-      success: true, 
-      token, 
-      user: { username: user.username, rol: user.rol } 
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: "Error interno del servidor" });
-  }
+    next();
 });
 
-// 4. Integración de Rutas de la API (Toda la lógica protegida está aquí)
+// 5. RUTA DE AUTENTICACIÓN (LOGIN)
+app.post('/auth', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await Usuario.findOne({ username });
+
+        if (!user || !(await user.compararPassword(password))) {
+            return res.status(401).json({ success: false, error: "Usuario o clave incorrectos" });
+        }
+
+        const token = jwt.sign(
+            { id: user._id, rol: user.rol, username: user.username },
+            process.env.JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+
+        res.json({ 
+            success: true, 
+            token, 
+            user: { username: user.username, rol: user.rol } 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: "Error en el servidor de autenticación" });
+    }
+});
+
+// 6. RUTAS DE LA API (Separación de Objetos y Servicios - SOS)
 app.use('/api', apiRoutes);
 
-// 5. Rutas de Frontend (Renderizado de Vistas)
-app.get('/login', (req, res) => res.render('login'));
+// 7. RUTAS DE NAVEGACIÓN (FRONTEND)
 app.get('/', (req, res) => res.render('index'));
+app.get('/login', (req, res) => res.render('login'));
 
-// 6. Manejo de Errores 404 (Ruta no encontrada)
+// 8. MANEJO DE ERRORES Y 404
 app.use((req, res) => {
-  res.status(404).json({ success: false, error: "Endpoint no encontrado" });
+    res.status(404).send('Recurso no encontrado en LabSystem');
 });
 
-// Lanzar Servidor
+// 9. LANZAMIENTO
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Servidor LabSystem Pro corriendo en: http://localhost:${PORT}`);
+    console.log(`
+    =================================================
+    🧪 LAB-SYSTEM V4.0 - LOGICA SOS ACTIVADA
+    📡 Servidor: http://localhost:${PORT}
+    🔐 Seguridad: JWT + Roles (Admin/Bio/Rec/Cont)
+    =================================================
+    `);
 });

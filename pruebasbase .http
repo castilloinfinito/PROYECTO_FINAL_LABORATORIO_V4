@@ -1,0 +1,18 @@
+### 1. LOGIN (La ruta real en tu app.js es /auth)
+# @name login
+POST http://localhost:3000/auth
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "123"
+}
+
+### -------------------------------------------------------
+### 2. GET PACIENTES (Esta sí lleva /api porque está en apiRoutes)
+### -------------------------------------------------------
+
+@token = {{login.response.body.token}}
+
+GET http://localhost:3000/api/pacientes
+Authorization: Bearer {{token}}
